@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>转盘抽奖</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #e7e7e7;
+            color: #666666;
+
+        }
+
+        .button {
+            background-color: #F03D3c;
+
+        }
+
+        .button1 {
+            margin-top: 28px;
+            margin-left: 12px;
+            width: 40%;
+            height: 36px;
+            border-radius: 4px;
+            border: transparent;
+        }
+
+        .content {
+            display: flex;
+            justify-content: center;
+            border: 1px solid #e5e5e5;
+        }
+
+        .box {
+            margin-top: 20px;
+            width: 280px;
+            height: 280px;
+            background-image: url('./loto-p.png');
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form {
+            margin-top: 20px;
+            width: 100%;
+            height: 100%;
+            display: none;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .input {
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        input,
+        select {
+            margin: 5px 0;
+            width: 100%;
+            line-height: 36px;
+            height: 36px;
+            border-radius: 4px;
+            border: 1px solid #e5e5e5;
+        }
+
+        .button2 {
+            width: 90%;
+            height: 48px;
+            border-radius: 4px;
+            border: transparent;
+        }
+
+        .loto {
+            width: 240px;
+            height: 240px;
+            background-image: url('./loto-z.png');
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+        <div class="box">
+            <div class="loto">
+
+            </div>
+        </div>
+        <div class="form">
+            <div class="input">
+                <label for="name">收货人姓名</label>
+                <input id="name" type="text" placeholder="收货人姓名">
+            </div>
+            <div class="input">
+                <label for="phone">手机号码</label>
+                <input id="phone" type="number" placeholder="请输入你的手机号码">
+            </div>
+            <div class="input" style="flex-direction: row;">
+                <div class="input">
+                    <label for="word">手机验证码</label>
+                    <input id="word" type="text" placeholder="手机验证码">
+                </div>
+                <button class="button button1">获取验证码</button>
+            </div>
+            <div class="input">
+                <label for="province">选择地区</label>
+                <select name="省份" id="province">
+                    <option value="江西">江西</option>
+                    <option value="浙江">浙江</option>
+                </select>
+            </div>
+            <div class="input">
+                <label for="city">城市</label>
+                <select name="城市" id="city">
+                    <option value="江西">南昌</option>
+                    <option value="浙江">杭州</option>
+                </select>
+            </div>
+            <div class="input">
+                <label for="address">详细地址</label>
+                <input id="address" type="text" placeholder="例如XX街道XX号">
+            </div>
+            <button class="button button2">提交订单</button>
+        </div>
+    </div>
+
+</body>
+<script>
+    const Prices = [{ "500元": [0, 15] }, { "200元": [16, 60] }, { "100元": [61, 120] }, { "50元": [121, 180] }, { "20元": [181, 250] }, { "10元": [251, 345] }, { "500元": [346, 360] }]
+    // 获取 loto 元素
+    var loto = document.querySelector('.loto');
+    var box = document.querySelector('.box');
+    var form = document.querySelector('.form');
+
+    var animation;
+    function findPriceByAngle(angle) {
+        let price;
+        for (let i = Prices.length - 1; i >= 0; i--) {
+            for (let range of Object.values(Prices[i])) {
+                if (range[0] <= angle && angle <= range[1]) {
+                    price = Prices[i];
+                    break;
+                }
+            }
+            if (price) {
+                break;
+            }
+        }
+        return price ? Object.keys(price)[0] : '未找到！';
+    }
+    // 启动旋转动画
+    function startRotationAnimation() {
+        animation = loto.animate(
+            [
+                { transform: 'rotate(0deg)' },
+                { transform: 'rotate(360deg)' },
+            ],
+            { duration: 500, iterations: Infinity, direction: 'normal' }
+        );
+    }
+
+    // 停止旋转动画
+    function stopRotationAnimation() {
+        animation.cancel();
+    }
+
+    // 取消抽屉
+    function closeDrawer() {
+        box.style.display = 'none';
+        form.style.display = 'flex';
+    }
+
+    // 在取消抽屉时获取最后一次旋转的角度
+    function getFinalRotationAngle() {
+        if (animation.finished) {
+            let keyframes = animation.effect.getKeyframes();
+            let lastKeyframe = keyframes[keyframes.length - 1];
+            let angle = lastKeyframe.transform.match(/rotate\((\d+(\.\d+)?)deg\)/)[1];
+            return parseFloat(angle);
+        }
+    }
+
+
+    setTimeout(() => {
+        startRotationAnimation();
+    }, 2000)
+    setTimeout(stopRotationAnimation, 7000);
+    setTimeout(function () {
+        // console.log(getFinalRotationAngle());
+        const price = findPriceByAngle(getFinalRotationAngle())
+        alert('恭喜你获得了' + price)
+    }, 8000);
+    setTimeout(closeDrawer, 10000);
+
+
+</script>
+
+</html>
